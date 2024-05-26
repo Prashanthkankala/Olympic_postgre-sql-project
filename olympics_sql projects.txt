@@ -1,0 +1,93 @@
+SQL Queries:
+	
+1. How many olympics games have been held?
+
+Problem Statement: Write a SQL query to find the total no of Olympic Games held as per the dataset.
+ select count(distinct games) as total_olympic_games
+    from olympics_history;
+	
+
+2. List down all Olympics games held so far.
+
+Problem Statement: Write a SQL query to list down all the Olympic Games held so far.
+
+1) select  distinct games
+	from  olympics_history;
+	
+2) SELECT DISTINCT games 
+FROM olympics_history
+ORDER BY games;
+
+
+	3. Mention the total no of nations who participated in each olympics game?
+
+Problem Statement: SQL query to fetch total no of countries participated in each olympic games
+
+
+SELECT games, COUNT(DISTINCT noc) AS total_noc
+FROM olympics_history
+GROUP BY games
+ORDER BY games;
+
+4. Which year saw the highest and lowest no of countries participating in olympics
+
+Problem Statement: Write a SQL query to return the Olympic Games which had the highest participating countries and the lowest participating countries.
+
+with all_countries as
+              (select games, nr.region
+              from olympics_history oh
+              join olympics_history_noc_regions nr ON nr.noc=oh.noc
+              group by games, nr.region),
+          tot_countries as
+              (select games, count(1) as total_countries
+              from all_countries
+              group by games)
+      select distinct
+      concat(first_value(games) over(order by total_countries)
+      , ' - '
+      , first_value(total_countries) over(order by total_countries)) as Lowest_Countries,
+      concat(first_value(games) over(order by total_countries desc)
+      , ' - '
+      , first_value(total_countries) over(order by total_countries desc)) as Highest_Countries
+      from tot_countries
+      order by 2;
+
+5. Which nation has participated in all of the olympic games
+
+Problem Statement: SQL query to return the list of countries who have been part of every Olympics games.
+
+WITH AllGames AS (
+    SELECT COUNT(DISTINCT games) AS total_games
+    FROM olympics_history
+),
+CountriesParticipation AS (
+    SELECT noc, COUNT(DISTINCT games) AS games_participated
+    FROM olympics_history
+    GROUP BY noc
+)
+SELECT cp.noc
+FROM CountriesParticipation cp, AllGames ag
+WHERE cp.games_participated = ag.total_games;
+
+6. Identify the sport which was played in all summer olympics.
+
+Problem Statement: SQL query to fetch the list of all sports which have been part of every olympics.
+	
+WITH t1 AS (
+    SELECT COUNT(DISTINCT games) AS total_summer_games
+    FROM olympics_history
+    WHERE season = 'Summer'
+),
+t2 AS (
+    SELECT DISTINCT sport, games
+    FROM olympics_history
+    WHERE season = 'Summer'
+),
+t3 AS (
+    SELECT sport, COUNT(games) AS no_of_games
+    FROM t2
+    GROUP BY sport
+)
+SELECT t3.*
+FROM t3
+JOIN t1 ON t1.total_summer_games = t3.no_of_games;
