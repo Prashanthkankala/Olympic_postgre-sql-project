@@ -1,3 +1,11 @@
+use the data set from
+https://www.kaggle.com/datasets/heesoo37/120-years-of-olympic-history-athletes-and-results
+
+
+
+
+
+
 SQL Queries:
 	
 1. How many olympics games have been held?
